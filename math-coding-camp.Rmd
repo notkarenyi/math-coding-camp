@@ -1,0 +1,24 @@
+---
+title: "math-coding-camp"
+output: html_document
+date: "2023-08-29"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Lab 1
+
+```{r}
+storms %>%
+  group_by(name,year) %>%
+  filter(max(category,na.rm=T)==5) %>%
+  ggplot(aes(long,lat,color=name)) +
+  geom_path() +
+  borders("world") +
+  coord_quickmap(xlim=c(-130,-60),
+                 ylim=c(20,50))
+```
+
