@@ -22,3 +22,44 @@ storms %>%
                  ylim=c(20,50))
 ```
 
+## Lab 3
+
+```{r}
+mean = 160
+sd = 20
+data <- rnorm(600,mean,sd)
+
+hist(data,
+     main=paste0('Normal dist. Mean: ',
+                 as.character(round(mean(data),2)),
+                 ', sd: ',
+                 as.character(round(sd(data),2))))
+```
+
+```{r}
+n = 1e5
+x <- rchisq(n,3)
+x_bar = mean(x)
+
+var_x <- sum(((x-x_bar)**2)/(n-1))
+
+tibble(x=data) |>
+  mutate(mean=mean(x),
+            variance=var_x,
+            `standard deviation` = sd(x))
+```
+
+```{r}
+chi_sq_samples <-
+  tibble(x=c(rchisq(n,1) + rchisq(n,1),
+             rchisq(n,3),
+             rchisq(n,4)),
+         df=rep(c(as.character(2:4)),each=n))
+
+chi_sq_samples |>
+  ggplot(aes(x,fill=df)) +
+  geom_density(alpha=.5) +
+  labs(fill='df',x='sample')
+```
+
+
