@@ -38,23 +38,23 @@ hist(data,
 
 ```{r}
 n = 1e5
-x <- rchisq(n,3)
-x_bar = mean(x)
+set.seed(1)
 
-var_x <- sum(((x-x_bar)**2)/(n-1))
-
-tibble(x=data) |>
+tibble(x=rchisq(n,3)) |>
   mutate(mean=mean(x),
-            variance=var_x,
-            `standard deviation` = sd(x))
+         variance=sum(((x-x_bar)**2))/(n-1),
+         var_r=var(x),
+         `standard deviation` = sd(x))
 ```
 
 ```{r}
 chi_sq_samples <-
-  tibble(x=c(rchisq(n,1) + rchisq(n,1),
+  # dist(df_t) == dist(df1 + df2)
+  tibble(x=c(rchisq(n,1)+rchisq(n,1),
+             rchisq(n,2),
              rchisq(n,3),
              rchisq(n,4)),
-         df=rep(c(as.character(2:4)),each=n))
+         df=rep(c(22,as.character(2:4)),each=n))
 
 chi_sq_samples |>
   ggplot(aes(x,fill=df)) +
@@ -62,4 +62,146 @@ chi_sq_samples |>
   labs(fill='df',x='sample')
 ```
 
+```{r}
+chi_sq_samples <-
+  # dist(df_t) == dist(df1 + df2)
+  tibble(x=c(rchisq(n,1)+rchisq(n,1),
+             rchisq(n,2),
+             rchisq(n,3),
+             rchisq(n,4)),
+         df=rep(c(2,as.character(2:4)),n))
 
+chi_sq_samples |>
+  ggplot(aes(x,fill=df)) +
+  geom_density(alpha=.5) +
+  labs(fill='df',x='sample')
+
+chi_sq_samples2 <-
+  tibble(x=c(rchisq(n/3,2),
+             rchisq(n/3,3),
+             rchisq(n/3+1,4)),
+         df=rep(3,n))
+
+ggplot(data = chi_sq_samples,aes(x,fill=df)) +
+  geom_density(alpha=.5) +
+  geom_density(data = chi_sq_samples2, alpha=.5,fill='purple') +
+  labs(fill='df',x='sample')
+```
+
+## Lab 4
+
+```{r}
+midwest
+glimpse(midwest)
+
+print(class(midwest['poptotal']))
+print(class(midwest[['poptotal']]))
+
+formatC(100000, format="d", big.mark=",")
+
+my_vector <- c(10000)
+midwest[midwest$poptotal %in% my_vector,]
+
+midwest[order(midwest$poptotal,decreasing=T),c("county")] %>% head()
+
+```
+
+```{r}
+# intuitive derivatives
+x=1:10
+
+x**2
+c(x**2,0) - c(0,x**2) + 1
+2*x
+print('')
+x**3
+(c(x**3,0) - c(0,x**3))
+3*(x**2)
+```
+
+```{r}
+# how does %in% work? separates each RHS element
+identical(1:4 %in% c(1,-1), 1:4==1|1:4==-1)
+```
+
+```{r}
+midwest$percpovertyunknown <- 100 - midwest$percpovertyknown
+
+midwest$lowestimate = round(midwest$percbelowpoverty)
+
+# % below poverty = N below poverty / N known status
+# % unknown poverty status = N unknown poverty / total pop
+# so to get these to the same units we need to use
+# % known status = N known status / total pop
+midwest <- midwest |>
+  mutate(highestimate = round((percbelowpoverty * percpovertyknown)/100 + percpovertyunknown))
+
+midwest[midwest$highestimate>35,c('county','state','lowestimate','highestimate')]
+```
+
+```{r}
+midwest$r <- rank(midwest$popamerindian,ties.method='first')
+midwest$r2 <- row_number(midwest$popamerindian)
+
+midwest[order(midwest$r),c('r','r2','popamerindian')]
+```
+
+```{r}
+summary(midwest[,c('popdensity','popamerindian')])
+fivenum(midwest$popamerindian)
+```
+
+```{r,eval=F}
+example <- read.xlsx(my_file, col_names = c('a','b','c','d'))
+
+# data to col function from excel
+separate(
+  data = example,
+  col = indicator,
+  sep = '\\n',
+  into = c('a','b','c','d')
+)
+```
+
+```{r}
+x <- c(1,2,3,4)
+# vector recycling occurs
+x[c(T,F)]
+# delete the first element
+x[-1]
+```
+
+```{r}
+midwest |>
+  filter(area>.01,
+         popamerindian==max(popamerindian)) |>
+  print()
+
+midwest |>
+  filter(area>.01) |>
+  filter(popamerindian==max(popamerindian))
+```
+
+```{r, eval=F}
+# case_when() evaluates sequentially: 
+case_when(
+  val < 25 ~ 'Q1',
+  val < 50 ~ 'Q2',
+  val < 75 ~ 'Q3',
+  val < 100 ~ 'Q4'
+)
+# may have to specify NA type, eg NA_integer_
+```
+
+```{r}
+# detecting user environment
+if (Sys.getenv('USER')=='kyi') {
+  setwd('~/')
+} else {
+  print(paste0('unknown user: ', getwd()))
+}
+
+# if else can't handle NAs so you may have to check edge cases with is.na()
+```
+
+NULL is undefined objected; NA is undefined value
